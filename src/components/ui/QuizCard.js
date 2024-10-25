@@ -1,3 +1,4 @@
+// src/components/ui/QuizCard.js
 export function QuizCard({ quiz, onStart }) {
     return (
       <div 

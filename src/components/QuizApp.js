@@ -142,68 +142,119 @@ export default function QuizApp() {
 
   const renderResult = () => {
     if (!selectedQuiz) return null;
-
-  let resultType;
   
-  if (selectedQuiz.id === 'mbti-quiz') {
-    // MBTI 퀴즈인 경우 해당 퀴즈의 calculateResult 메서드 사용
-    resultType = selectedQuiz.calculateResult(answers);
-  } else {
-    // 다른 퀴즈들의 결과 계산 로직
-    resultType = calculateNormalResult(answers);
-  }
-
-  const resultData = selectedQuiz.results[resultType];
+    try {
+      let resultType;
+      
+      if (selectedQuiz.id === 'mbti-quiz') {
+        resultType = selectedQuiz.calculateResult(answers);
+      } 
+      // 동물, 인터뷰, 상태 테스트인 경우
+      else if (['animal-quiz', 'interview-quiz', 'status-quiz'].includes(selectedQuiz.id)) {
+        const resultCounts = answers.reduce((acc, curr) => {
+          acc[curr] = (acc[curr] || 0) + 1;
+          return acc;
+        }, {});
+        resultType = Object.entries(resultCounts)
+          .sort(([,a], [,b]) => b - a)[0][0];
+      }
+      // 다른 퀴즈들의 경우 - 첫번째 답변을 결과로 사용
+      else {
+        resultType = answers[0] || Object.keys(selectedQuiz.results)[0];
+      }
   
-  if (!resultData) {
-    return null;
-  }
+      // 결과 타입이 없거나 유효하지 않은 경우
+      if (!selectedQuiz.results[resultType]) {
+        resultType = Object.keys(selectedQuiz.results)[0];
+      }
   
-    return (
-      <div className="max-w-md mx-auto">
-        <div className="bg-white rounded-lg p-6 shadow-md">
-          <div className="text-center">
-            <div className="text-xl font-bold mb-4">결과는...</div>
-            <div className="text-6xl mb-6">{selectedQuiz.mainCharacter}</div>
-            <div className="text-lg font-bold mb-2">{userName}님의 결과는</div>
-            <div className="text-2xl font-bold mb-6">{resultData.title}</div>
-            
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <div className="text-gray-600">
-                {resultData.description}
+      const resultData = selectedQuiz.results[resultType];
+  
+      return (
+        <div className="max-w-md mx-auto">
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <div className="text-center">
+              <div className="text-xl font-bold mb-4">결과는...</div>
+              <div className="text-6xl mb-6">{selectedQuiz.mainCharacter}</div>
+              <div className="text-lg font-bold mb-2">
+                {userName}님의 {selectedQuiz.id === 'mbti-quiz' ? 'MBTI' : '결과'}는
               </div>
-              {resultData.traits && (
-                <div className="mt-4">
-                  <div className="font-bold mb-2">당신의 특징:</div>
-                  <ul className="text-left list-disc list-inside">
-                    {resultData.traits.map((trait, index) => (
-                      <li key={`trait-${resultData.title}-${index}`} className="text-gray-600">
-                        {trait}
-                      </li>
-                    ))}
-                  </ul>
+              <div className="text-2xl font-bold mb-6">
+                {resultData.title || resultType}
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <div className="text-gray-600">
+                  {resultData.description}
                 </div>
-              )}
-            </div>
+                {resultData.traits && (
+                  <div className="mt-4">
+                    <div className="font-bold mb-2">당신의 특징:</div>
+                    <ul className="text-left list-disc list-inside">
+                      {resultData.traits.map((trait, index) => (
+                        <li key={`trait-${index}`} className="text-gray-600">{trait}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
   
-            <Button 
-              onClick={() => {
-                setCurrentView('main')
-                setSelectedQuiz(null)
-                setAnswers([])
-                setUserName('')
-                setProgress(0)
-              }}
-              className="w-full bg-pink-400 hover:bg-pink-500 text-white"
-            >
-              다른 테스트 하기
-            </Button>
+              <Button 
+                onClick={resetQuiz}
+                className="w-full bg-pink-400 hover:bg-pink-500 text-white"
+              >
+                다른 테스트 하기
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-    )
-  }
-
+      );
+  
+    } catch (error) {
+      console.error('Result calculation error:', error);
+      
+      // 안전하게 결과 데이터 확인
+      if (!selectedQuiz?.results) {
+        return (
+          <div className="max-w-md mx-auto">
+            <div className="bg-white rounded-lg p-6 shadow-md">
+              <div className="text-center">
+                <div className="text-xl font-bold mb-4">오류가 발생했습니다</div>
+                <Button 
+                  onClick={resetQuiz}
+                  className="w-full bg-pink-400 hover:bg-pink-500 text-white"
+                >
+                  다시 시도하기
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      
+      // 기본 결과 사용
+      const fallbackType = Object.keys(selectedQuiz.results)[0];
+      const resultData = selectedQuiz.results[fallbackType];
+    
+      return (
+        <div className="max-w-md mx-auto">
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <div className="text-center">
+              <div className="text-xl font-bold mb-4">결과는...</div>
+              <div className="text-6xl mb-6">{selectedQuiz.mainCharacter}</div>
+              <div className="text-gray-600 mb-6">{resultData.description}</div>
+              <Button 
+                onClick={resetQuiz}
+                className="w-full bg-pink-400 hover:bg-pink-500 text-white"
+              >
+                다시 테스트하기
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-100 to-purple-100 p-4">
       {currentView === 'main' && renderMain()}
@@ -212,4 +263,5 @@ export default function QuizApp() {
       {currentView === 'result' && renderResult()}
     </div>
   )
+
 }

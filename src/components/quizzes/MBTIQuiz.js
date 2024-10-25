@@ -659,6 +659,12 @@ export const MBTIQuiz = {
       // ... 다른 MBTI 유형들도 같은 형식으로 추가
     },
     calculateResult: function(answers) {
+      const defaultType = 'ISTJ';  // 기본 타입 설정
+    
+      if (!answers || answers.length === 0) {
+        return defaultType;
+      }
+    
       const counts = {
         E: 0, I: 0,
         S: 0, N: 0,
@@ -666,18 +672,31 @@ export const MBTIQuiz = {
         J: 0, P: 0
       };
     
+      // 유효한 답변만 카운트
       answers.forEach(answer => {
-        counts[answer]++;
+        if (answer in counts) {
+          counts[answer]++;
+        }
       });
     
-      return [
-        counts.E > counts.I ? 'E' : 'I',
-        counts.S > counts.N ? 'S' : 'N',
-        counts.T > counts.F ? 'T' : 'F',
-        counts.J > counts.P ? 'J' : 'P'
+      // 각 지표별로 더 높은 점수를 가진 성향 선택
+      // 동점인 경우 첫 번째 성향 선택 (E/I, S/N, T/F, J/P 중 앞쪽)
+      const type = [
+        counts.E >= counts.I ? 'E' : 'I',
+        counts.S >= counts.N ? 'S' : 'N',
+        counts.T >= counts.F ? 'T' : 'F',
+        counts.J >= counts.P ? 'J' : 'P'
       ].join('');
+    
+      // 유효한 MBTI 타입인지 확인
+      if (this.results[type]) {
+        return type;
+      }
+    
+      return defaultType;
     }
-  
+    
+      
 }
 
   
