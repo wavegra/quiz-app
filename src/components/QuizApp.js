@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Card } from './ui/card'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Progress } from './ui/progress'
@@ -91,24 +91,35 @@ const QuizApp = () => {
     setProgress(0)
   }
 
-  const renderMain = () => (
-    <div className="max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <div className="font-bold text-xl mb-2">✨ 내 취향을 찾아! 나를 보여주는</div>
-        <div className="text-2xl font-bold">TEST PLANET</div>
-        <div className="text-xl">테스트플래닛</div>
-      </div>
-      <div className="space-y-4">
-        {quizzes.map((quiz) => (
-          <QuizCard
-            key={`quiz-${quiz.id}`}
-            quiz={quiz}
-            onStart={() => handleQuizSelect(quiz)}
-          />
-        ))}
-      </div>
-    </div>
-  )
+  const renderMain = () => {
+    return (
+      <>
+        <div className="text-center pt-8 pb-4">
+          <div className="text-lg mb-2">✨ 내 취향을 찾아! 나를 보여주는</div>
+          <div className="text-5xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
+            TEST PLANET
+          </div>
+          <div className="text-xl">테스트플래닛</div>
+        </div>
+
+        <div className="space-y-4">
+          {quizzes.map((quiz) => (
+            <Card 
+              key={quiz.id}
+              className="hover:shadow-lg transition-shadow cursor-pointer p-6"
+              onClick={() => handleQuizSelect(quiz)}
+            >
+              <div className="text-center">
+                <div className="text-4xl mb-2">{quiz.mainCharacter}</div>
+                <div className="text-xl font-bold mb-2">{quiz.title}</div>
+                <p className="text-gray-600">{quiz.description}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </>
+    );
+  };
 
   const renderNameInput = () => {
     const isYeseul = userName === '홍예슬' || userName === '예슬';
@@ -218,7 +229,7 @@ const QuizApp = () => {
                 💖 홍예슬 사랑해 💖
               </div>
             )}
-            
+
               <div className="text-2xl font-bold mb-6">
                 {result.title}
               </div>
@@ -310,17 +321,17 @@ const QuizApp = () => {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-100 to-purple-100">
-      <div className="max-w-md mx-auto p-4">
-        {currentView === 'main' && renderMain()}
-        {currentView === 'name' && renderNameInput()}
-        {currentView === 'quiz' && renderQuiz()}
-        {currentView === 'result' && renderResult()}
-      </div>
+return (
+  <div className="min-h-screen bg-gradient-to-b from-pink-100 to-purple-100">
+    <div className="max-w-md mx-auto p-4">
+      {currentView === 'main' && renderMain()}
+      {currentView === 'name' && renderNameInput()}
+      {currentView === 'quiz' && renderQuiz()}
+      {currentView === 'result' && renderResult()}
     </div>
-  )
+  </div>
+);
+
 }
 
 export default QuizApp
-  
