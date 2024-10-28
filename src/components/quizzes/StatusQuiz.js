@@ -40,5 +40,27 @@ export const StatusQuiz = {
         description: "당신은 지금 균형잡힌 편안한 상태를 유지하고 있어요!",
         traits: ["안정된 에너지", "평온한 마음", "규칙적인 생활", "조화로운 균형"]
       }
+    },
+
+    calculateResult: function(answers) {
+      // 답변이 없는 경우 기본값 반환
+      if (!answers || answers.length === 0) {
+        return 'medium';
+      }
+
+      // 각 상태별 점수 집계
+      const counts = {
+        high: 0,
+        medium: 0
+      };
+
+      answers.forEach(answer => {
+        if (answer in counts) {
+          counts[answer]++;
+        }
+      });
+
+      // 더 높은 점수를 받은 상태 반환
+      return counts.high > counts.medium ? 'high' : 'medium';
     }
   }

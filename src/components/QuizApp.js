@@ -8,8 +8,7 @@ import { Progress } from './ui/progress'
 import { QuizCard } from './ui/QuizCard'
 import { quizzes } from './quizzes'
 
-
-export default function QuizApp() {
+const QuizApp = () => {
   const [currentView, setCurrentView] = useState('main')
   const [selectedQuiz, setSelectedQuiz] = useState(null)
   const [userName, setUserName] = useState('')
@@ -19,33 +18,76 @@ export default function QuizApp() {
   const handleQuizSelect = (quiz) => {
     setSelectedQuiz(quiz)
     setCurrentView('name')
-    setProgress(0)
-    setAnswers([])
   }
 
-  const handleStartQuiz = () => {
+  const handleNameSubmit = (e) => {
+    e.preventDefault()
     if (userName.trim()) {
       setCurrentView('quiz')
+      setAnswers([])
       setProgress(0)
     }
   }
 
-  const handleAnswer = (answerValue) => {
-    const newAnswers = [...answers, answerValue]
+  const handleAnswer = (answer) => {
+    const newAnswers = [...answers, answer]
     setAnswers(newAnswers)
-    const newProgress = (newAnswers.length / selectedQuiz.questions.length) * 100
-    setProgress(newProgress)
     
     if (newAnswers.length === selectedQuiz.questions.length) {
       setCurrentView('result')
+    } else {
+      setProgress((newAnswers.length / selectedQuiz.questions.length) * 100)
+    }
+  }
+
+  const calculateResult = (answers) => {
+    // 퀴즈나 답변이 없는 경우 체크
+    if (!selectedQuiz || !answers || answers.length === 0) {
+      console.error('퀴즈 또는 답변이 없습니다.');
+      return null;
+    }
+
+    try {
+      // 퀴즈에 calculateResult 함수가 있는 경우 해당 함수 사용
+      if (typeof selectedQuiz.calculateResult === 'function') {
+        return selectedQuiz.calculateResult(answers);
+      }
+
+      // 퀴즈에 calculateResult 함수가 없는 경우 기본 계산 로직 사용
+      const counts = {};
+      answers.forEach(answer => {
+        counts[answer] = (counts[answer] || 0) + 1;
+      });
+
+      // 가장 많이 선택된 답변을 결과로 사용
+      let maxCount = 0;
+      let result = Object.keys(selectedQuiz.results)[0]; // 기본값으로 첫 번째 결과 사용
+
+      Object.entries(counts).forEach(([answer, count]) => {
+        if (count > maxCount) {
+          maxCount = count;
+          result = answer;
+        }
+      });
+
+      // 결과가 유효한지 확인
+      if (!selectedQuiz.results[result]) {
+        console.error('유효하지 않은 결과:', result);
+        result = Object.keys(selectedQuiz.results)[0]; // 폴백으로 첫 번째 결과 사용
+      }
+
+      return result;
+    } catch (error) {
+      console.error('결과 계산 중 오류:', error);
+      return Object.keys(selectedQuiz.results)[0]; // 에러 발생 시 첫 번째 결과 반환
     }
   }
 
   const resetQuiz = () => {
     setCurrentView('main')
     setSelectedQuiz(null)
-    setAnswers([])
     setUserName('')
+    setAnswers([])
     setProgress(0)
   }
 
@@ -53,10 +95,9 @@ export default function QuizApp() {
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
         <div className="font-bold text-xl mb-2">✨ 내 취향을 찾아! 나를 보여주는</div>
-        <div className="text-2xl font-bold">MYMY TEST</div>
-        <div className="text-xl">마이마이 테스트</div>
+        <div className="text-2xl font-bold">TEST PLANET</div>
+        <div className="text-xl">테스트플래닛</div>
       </div>
-      
       <div className="space-y-4">
         {quizzes.map((quiz) => (
           <QuizCard
@@ -91,7 +132,7 @@ export default function QuizApp() {
             </div>
 
             <Button 
-              onClick={handleStartQuiz}
+              onClick={handleNameSubmit}
               className="mt-4 w-full max-w-xs bg-pink-400 hover:bg-pink-500 text-white"
             >
               시작하기
@@ -144,32 +185,9 @@ export default function QuizApp() {
     if (!selectedQuiz) return null;
   
     try {
-      let resultType;
+      // MBTI 퀴즈인 경우 직접 퀴즈의 calculateResult 함수 사용
+      const result = selectedQuiz.calculateResult(answers);
       
-      if (selectedQuiz.id === 'mbti-quiz') {
-        resultType = selectedQuiz.calculateResult(answers);
-      } 
-      // 동물, 인터뷰, 상태 테스트인 경우
-      else if (['animal-quiz', 'interview-quiz', 'status-quiz'].includes(selectedQuiz.id)) {
-        const resultCounts = answers.reduce((acc, curr) => {
-          acc[curr] = (acc[curr] || 0) + 1;
-          return acc;
-        }, {});
-        resultType = Object.entries(resultCounts)
-          .sort(([,a], [,b]) => b - a)[0][0];
-      }
-      // 다른 퀴즈들의 경우 - 첫번째 답변을 결과로 사용
-      else {
-        resultType = answers[0] || Object.keys(selectedQuiz.results)[0];
-      }
-  
-      // 결과 타입이 없거나 유효하지 않은 경우
-      if (!selectedQuiz.results[resultType]) {
-        resultType = Object.keys(selectedQuiz.results)[0];
-      }
-  
-      const resultData = selectedQuiz.results[resultType];
-  
       return (
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-lg p-6 shadow-md">
@@ -177,72 +195,70 @@ export default function QuizApp() {
               <div className="text-xl font-bold mb-4">결과는...</div>
               <div className="text-6xl mb-6">{selectedQuiz.mainCharacter}</div>
               <div className="text-lg font-bold mb-2">
-                {userName}님의 {selectedQuiz.id === 'mbti-quiz' ? 'MBTI' : '결과'}는
+                {userName}님의 결과는
               </div>
+              
               <div className="text-2xl font-bold mb-6">
-                {resultData.title || resultType}
+                {result.title}
               </div>
               
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <div className="text-gray-600">
-                  {resultData.description}
+                  {result.description}
                 </div>
-                {resultData.traits && (
-                  <div className="mt-4">
-                    <div className="font-bold mb-2">당신의 특징:</div>
-                    <ul className="text-left list-disc list-inside">
-                      {resultData.traits.map((trait, index) => (
-                        <li key={`trait-${index}`} className="text-gray-600">{trait}</li>
-                      ))}
-                    </ul>
+              </div>
+  
+              {/* MBTI 결과 추가 정보 표시 */}
+              {result.traits && (
+                <div className="mb-6">
+                  <div className="font-bold mb-2">주요 특성</div>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {result.traits.map((trait, index) => (
+                      <span key={index} className="px-3 py-1 bg-pink-100 rounded-full text-sm">
+                        {trait}
+                      </span>
+                    ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
   
-              <Button 
-                onClick={resetQuiz}
-                className="w-full bg-pink-400 hover:bg-pink-500 text-white"
-              >
-                다른 테스트 하기
-              </Button>
-            </div>
-          </div>
-        </div>
-      );
+              {result.details && (
+                <div className="mb-6 text-left">
+                  <div className="font-bold mb-2">상세 특징</div>
+                  <ul className="list-disc pl-5 space-y-2">
+                    {result.details.map((detail, index) => (
+                      <li key={index} className="text-gray-600">{detail}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* 약점 섹션 추가 */}
+              {result.weaknesses && (
+                <div className="mb-6 text-left">
+                  <div className="font-bold mb-2">약점</div>
+                  <ul className="list-disc pl-5 space-y-2">
+                    {result.weaknesses.map((weakness, index) => (
+                      <li key={index} className="text-gray-600">{weakness}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* 추천 직업 섹션 추가 */}
+              {result.careerPaths && (
+                <div className="mb-6">
+                  <div className="font-bold mb-2">추천 직업</div>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {result.careerPaths.map((career, index) => (
+                      <span key={index} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                        {career}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
   
-    } catch (error) {
-      console.error('Result calculation error:', error);
-      
-      // 안전하게 결과 데이터 확인
-      if (!selectedQuiz?.results) {
-        return (
-          <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-lg p-6 shadow-md">
-              <div className="text-center">
-                <div className="text-xl font-bold mb-4">오류가 발생했습니다</div>
-                <Button 
-                  onClick={resetQuiz}
-                  className="w-full bg-pink-400 hover:bg-pink-500 text-white"
-                >
-                  다시 시도하기
-                </Button>
-              </div>
-            </div>
-          </div>
-        );
-      }
-      
-      // 기본 결과 사용
-      const fallbackType = Object.keys(selectedQuiz.results)[0];
-      const resultData = selectedQuiz.results[fallbackType];
-    
-      return (
-        <div className="max-w-md mx-auto">
-          <div className="bg-white rounded-lg p-6 shadow-md">
-            <div className="text-center">
-              <div className="text-xl font-bold mb-4">결과는...</div>
-              <div className="text-6xl mb-6">{selectedQuiz.mainCharacter}</div>
-              <div className="text-gray-600 mb-6">{resultData.description}</div>
               <Button 
                 onClick={resetQuiz}
                 className="w-full bg-pink-400 hover:bg-pink-500 text-white"
@@ -253,15 +269,37 @@ export default function QuizApp() {
           </div>
         </div>
       );
+    } catch (error) {
+      console.error('Result rendering error:', error);
+      return (
+        <div className="max-w-md mx-auto">
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <div className="text-center">
+              <div className="text-xl font-bold mb-4">오류가 발생했습니다</div>
+              <Button 
+                onClick={resetQuiz}
+                className="w-full bg-pink-400 hover:bg-pink-500 text-white"
+              >
+                다시 시도하기
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
     }
-  };
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-100 to-purple-100 p-4">
-      {currentView === 'main' && renderMain()}
-      {currentView === 'name' && renderNameInput()}
-      {currentView === 'quiz' && renderQuiz()}
-      {currentView === 'result' && renderResult()}
+    <div className="min-h-screen bg-gradient-to-b from-pink-100 to-purple-100">
+      <div className="max-w-md mx-auto p-4">
+        {currentView === 'main' && renderMain()}
+        {currentView === 'name' && renderNameInput()}
+        {currentView === 'quiz' && renderQuiz()}
+        {currentView === 'result' && renderResult()}
+      </div>
     </div>
   )
-
 }
+
+export default QuizApp
+  
