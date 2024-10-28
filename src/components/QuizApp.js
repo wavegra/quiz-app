@@ -1,5 +1,8 @@
 'use client'
 
+import fireworksAnimation from '../animations/fireworks.json'; // 폭죽 애니메이션 JSON
+import Lottie from 'lottie-react';
+console.log('Lottie imported:', Lottie);
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
@@ -497,6 +500,91 @@ const QuizApp = () => {
       const result = selectedQuiz.calculateResult(answers);
       const isYeseul = userName === '홍예슬' || userName === '예슬';
       
+      if (selectedQuiz.id === 'school-major') {
+        return (
+          <div className="max-w-md mx-auto">
+            
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <Lottie 
+          animationData={fireworksAnimation}
+          loop={true}
+          autoplay={true}
+          style={{ position: 'absolute', width: '100%', height: '100%' }}
+        />
+      </div>
+
+
+            <div className="bg-white rounded-lg p-6 shadow-md">
+
+              <div className="text-center space-y-4">
+                <h2 className="text-lg">분석 결과...</h2>
+                
+                <div className="text-5xl my-4">
+                  {selectedQuiz.mainCharacter}
+                </div>
+  
+                <h1 className="text-2xl font-bold">
+                  {result.title || "당신에게 맞는 학교와 전공"}
+                </h1>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-bold mb-3">추천 학교 및 전공</h3>
+                  {result.recommendedSchools?.map((school, index) => (
+                    <div key={index} className="mb-3">
+                      <div className="font-bold text-lg text-pink-600">{school.name}</div>
+                      <div className="text-gray-600">
+                        {school.majors.join(', ')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+  
+                <div className="text-left">
+                  <h3 className="text-lg font-bold mb-2">성향 분석</h3>
+                  <ul className="space-y-1.5">
+                    {result.details?.map((detail, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+  
+                <div>
+                  <h3 className="text-lg font-bold mb-2">강점</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {result.strengths?.map((strength, index) => (
+                      <span key={index} className="px-3 py-1 bg-pink-50 text-pink-900 rounded-full text-sm">
+                        {strength}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+  
+                <div>
+                  <h3 className="text-lg font-bold mb-2">추천 진로</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {result.careerPaths?.map((career, index) => (
+                      <span key={index} className="px-3 py-1 bg-purple-50 text-purple-900 rounded-full text-sm">
+                        {career}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+  
+                <Button 
+                  onClick={resetQuiz}
+                  className="w-full bg-pink-400 hover:bg-pink-500 text-white py-2.5 text-base mt-4"
+                >
+                  다시 테스트하기
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-lg p-5 shadow-md">

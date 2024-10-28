@@ -454,27 +454,30 @@ export const SchoolMajorQuiz = {
     },
 
     calculateResult: function(answers) {
-        console.log('Calculating result with answers:', answers); // 디버깅용
-      
         try {
-          // MBTI 답변만 추출 (첫 번째 답변 제외)
-          const mbtiAnswers = answers.slice(1).map(answer => answer);
+          // 성적 정보 처리 (첫 번째 답변)
+          const gradesInfo = answers[0];
+          const grades = gradesInfo?.grades || {};
           
+          // 평균 등급 계산
+          const gradeValues = Object.values(grades).map(Number);
+          const averageGrade = gradeValues.length > 0 
+            ? gradeValues.reduce((a, b) => a + b, 0) / gradeValues.length 
+            : 0;
+      
+          // MBTI 계산 (나머지 답변들)
+          const mbtiAnswers = answers.slice(1);
           const counts = {
-            E: 0, I: 0,
-            S: 0, N: 0,
-            T: 0, F: 0,
-            J: 0, P: 0
+            E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0
           };
           
           mbtiAnswers.forEach(answer => {
-            if (typeof answer === 'object' && answer.value) {
-              counts[answer.value]++;
-            } else if (typeof answer === 'string') {
-              counts[answer]++;
+            const value = answer?.value || answer;
+            if (value in counts) {
+              counts[value]++;
             }
           });
-            
+      
           const mbti = [
             counts.E > counts.I ? 'E' : 'I',
             counts.S > counts.N ? 'S' : 'N',
@@ -482,33 +485,88 @@ export const SchoolMajorQuiz = {
             counts.J > counts.P ? 'J' : 'P'
           ].join('');
       
-          console.log('Calculated MBTI:', mbti); // 디버깅용
-      
-          // 성적 정보는 첫 번째 답변에 있음
-          const gradesInfo = answers[0];
-          console.log('Grades info:', gradesInfo); // 디버깅용
-      
-          // 등급 평균 계산 (숫자로 변환하여 계산)
-          if (gradesInfo && gradesInfo.grades) {
-            const grades = Object.values(gradesInfo.grades)
-              .map(grade => parseInt(grade))
-              .filter(grade => !isNaN(grade));
-      
-            if (grades.length > 0) {
-              const averageGrade = grades.reduce((a, b) => a + b, 0) / grades.length;
-              console.log('Average grade:', averageGrade); // 디버깅용
-            }
+          // 등급에 따른 학교/전공 추천
+          let recommendedSchools = [];
+          if (averageGrade <= 2) {  // 1~2등급
+            recommendedSchools = [
+              {
+                name: "서울대학교",
+                majors: ["컴퓨터공학부", "경영학과", "심리학과"]
+              },
+              {
+                name: "연세대학교",
+                majors: ["전기전자공학부", "경제학과", "국제학부"]
+              }
+            ];
+          } else if (averageGrade <= 3) {  // 2~3등급
+            recommendedSchools = [
+              {
+                name: "고려대학교",
+                majors: ["미디어학부", "생명공학과", "정치외교학과"]
+              },
+              {
+                name: "서강대학교",
+                majors: ["컴퓨터공학과", "경영학부", "심리학과"]
+              }
+            ];
+          } else {  // 4등급 이상
+            recommendedSchools = [
+              {
+                name: "중앙대학교",
+                majors: ["소프트웨어학부", "경영학과", "심리학과"]
+              },
+              {
+                name: "숭실대학교",
+                majors: ["IT학부", "미디어학과", "경영학부"]
+              }
+            ];
           }
       
-          // MBTI 결과만 반환 (일단 성적은 제외)
-            return mbti;
+          // MBTI에 따른 성향 분석
+          const personalityTraits = {
+            strengths: [
+              "학업에 대한 열정",
+              "체계적인 학습 능력",
+              "문제 해결 능력"
+            ],
+            details: [
+              "당신의 평균 등급은 " + averageGrade.toFixed(1) + "등급입니다.",
+              mbti + " 성향에 따른 학습 스타일을 가지고 있습니다.",
+              "체계적이고 논리적인 사고방식을 가지고 있습니다."
+            ],
+            careerPaths: [
+              "연구원",
+              "개발자",
+              "기획자",
+              "교육자"
+            ]
+          };
+      
+          return {
+            title: "당신에게 맞는 학교와 전공",
+            recommendedSchools,
+            details: personalityTraits.details,
+            strengths: personalityTraits.strengths,
+            careerPaths: personalityTraits.careerPaths
+          };
       
         } catch (error) {
-          console.error('Error calculating result:', error);
-          return 'ISTJ'; // 오류 발생 시 기본값 반환
+          console.error('Error in calculateResult:', error);
+          // 에러 발생 시 기본값 반환
+          return {
+            title: "추천 결과",
+            recommendedSchools: [
+              {
+                name: "대학교",
+                majors: ["추천 전공"]
+              }
+            ],
+            details: ["분석 중 오류가 발생했습니다."],
+            strengths: ["다시 시도해주세요"],
+            careerPaths: ["재시도 필요"]
+          };
         }
-      }
-      
+    }
 
   };
 
