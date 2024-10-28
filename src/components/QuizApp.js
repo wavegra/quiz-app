@@ -111,75 +111,84 @@ const QuizApp = () => {
   )
 
   const renderNameInput = () => {
-    if (!selectedQuiz) return null;
-
+    const isYeseul = userName === '홍예슬' || userName === '예슬';
+  
     return (
       <div className="max-w-md mx-auto">
         <div className="bg-white rounded-lg p-6 shadow-md">
-          <div className="text-center">
-            <div className="text-2xl font-bold mb-2">{selectedQuiz.title}</div>
-            <div className="text-6xl mb-4">{selectedQuiz.mainCharacter}</div>
-            <div className="font-bold">__의 상태는? 이름을 알려주세요 ▼</div>
-            
-            <div className="mt-6">
+          <form onSubmit={handleNameSubmit}>
+            <div className="text-center mb-6">
+              <div className="text-xl font-bold mb-4">당신의 이름은?</div>
               <Input
                 type="text"
-                placeholder="이름을 입력해주세요"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                className="max-w-xs mx-auto text-center"
+                placeholder="이름을 입력해주세요"
+                className="text-center"
               />
             </div>
-
+  
+            {/* 예슬이를 위한 특별 메시지 */}
+            {isYeseul && (
+              <div className="text-center mb-4 text-pink-500 font-bold animate-bounce">
+                💖 홍예슬 사랑해 💖
+              </div>
+            )}
+  
             <Button 
-              onClick={handleNameSubmit}
-              className="mt-4 w-full max-w-xs bg-pink-400 hover:bg-pink-500 text-white"
+              type="submit"
+              className="w-full bg-pink-400 hover:bg-pink-500 text-white"
             >
               시작하기
             </Button>
-          </div>
+          </form>
         </div>
       </div>
-    )
-  }
-
+    );
+  };
   const renderQuiz = () => {
     if (!selectedQuiz || !selectedQuiz.questions[answers.length]) return null;
-
+  
     const currentQuestion = selectedQuiz.questions[answers.length];
-
+    const isYeseul = userName === '홍예슬' || userName === '예슬';
+  
     return (
       <div className="max-w-md mx-auto">
-        <div className="fixed top-0 left-0 w-full h-2 bg-gray-200">
-          <div 
-            className="h-full bg-pink-400 transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
         <div className="bg-white rounded-lg p-6 shadow-md mt-4">
           <div className="text-center mb-6">
             <div className="text-gray-600 text-sm mb-4">
-              Question {answers.length + 1} / {selectedQuiz.questions.length}
+              Question {answers.length + 1} of {selectedQuiz.questions.length}
             </div>
-            <div className="text-xl font-bold">{currentQuestion.text}</div>
+            <div className="text-xl font-bold mb-4">{currentQuestion.text}</div>
+            
+            <div className="space-y-3">
+              {currentQuestion.options?.map((option, index) => (
+                <Button
+                  key={index}
+                  onClick={() => handleAnswer(option.value)}
+                  className="w-full bg-white hover:bg-pink-50 text-gray-800 border-2 border-pink-200 p-4"
+                >
+                  {option.text}
+                </Button>
+              ))}
+            </div>
+  
+            {/* 예슬이를 위한 특별 메시지 */}
+            {isYeseul && (
+              <div className="mt-6 text-pink-500 font-bold animate-bounce">
+                💖 홍예슬 사랑해 💖
+              </div>
+            )}
           </div>
-
-          <div className="space-y-3">
-            {currentQuestion.options.map((option, index) => (
-              <button
-                key={`option-${currentQuestion.id}-${index}`}
-                className="w-full p-4 text-left border-2 border-pink-200 rounded-lg hover:bg-pink-50 transition-colors"
-                onClick={() => handleAnswer(option.value)}
-              >
-                {option.text}
-              </button>
-            ))}
+  
+          {/* Progress bar */}
+          <div className="mt-4">
+            <Progress value={progress} className="bg-pink-100" indicatorClassName="bg-pink-500" />
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const renderResult = () => {
     if (!selectedQuiz) return null;
@@ -187,7 +196,11 @@ const QuizApp = () => {
     try {
       // MBTI 퀴즈인 경우 직접 퀴즈의 calculateResult 함수 사용
       const result = selectedQuiz.calculateResult(answers);
-      
+      const isYeseul = userName === '홍예슬' || userName === '예슬';
+      const specialName = isYeseul ? 
+        `세상에서 가장 아름다운 ${userName}` : 
+        userName;
+  
       return (
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-lg p-6 shadow-md">
@@ -195,9 +208,17 @@ const QuizApp = () => {
               <div className="text-xl font-bold mb-4">결과는...</div>
               <div className="text-6xl mb-6">{selectedQuiz.mainCharacter}</div>
               <div className="text-lg font-bold mb-2">
-                {userName}님의 결과는
+                {specialName}님의 결과는
               </div>
               
+
+               {/* 예슬이를 위한 특별 메시지 */}
+            {isYeseul && (
+              <div className="text-pink-500 font-bold animate-bounce mb-4">
+                💖 홍예슬 사랑해 💖
+              </div>
+            )}
+            
               <div className="text-2xl font-bold mb-6">
                 {result.title}
               </div>
