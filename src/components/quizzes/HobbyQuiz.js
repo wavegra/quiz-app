@@ -3,6 +3,8 @@ export const HobbyQuiz = {
     title: "나의 취미 찾기",
     subtitle: "당신에게 맞는 취미는?",
     mainCharacter: "🎨",
+    category: "",  // 수험생 카테고리
+    isPopular: false,  // 필요에 따라 true로 설정
     questions: [
       {
         id: 1,

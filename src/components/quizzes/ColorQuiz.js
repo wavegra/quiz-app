@@ -3,6 +3,8 @@ export const ColorQuiz = {
     title: "나의 컬러 찾기",
     subtitle: "당신과 어울리는 색은?",
     mainCharacter: "🎨",
+    category: "",  // 수험생 카테고리
+    isPopular: false,  // 필요에 따라 true로 설정
     questions: [
       {
         id: 1,

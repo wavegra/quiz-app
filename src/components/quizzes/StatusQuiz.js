@@ -3,6 +3,8 @@ export const StatusQuiz = {
     title: "요즘 내 상태 테스트",
     subtitle: "당신의 현재 상태는?",
     mainCharacter: "🐧",
+    category: "",  // 수험생 카테고리
+    isPopular: true,  // 필요에 따라 true로 설정
     questions: [
       {
         id: 1,

@@ -3,6 +3,9 @@ export const AnimalQuiz = {
     title: "나와 닮은 동물",
     subtitle: "당신과 닮은 동물은?",
     mainCharacter: "🦁",
+    category: "",  // 수험생 카테고리
+    isPopular: false,  // 필요에 따라 true로 설정
+  
     questions: [
       {
         id: 1,

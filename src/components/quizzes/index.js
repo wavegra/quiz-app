@@ -8,8 +8,11 @@ import { JobQuiz } from './JobQuiz'
 import { LoveQuiz } from './LoveQuiz'
 import { HobbyQuiz } from './HobbyQuiz'
 import { ColorQuiz } from './ColorQuiz'
+import { SchoolMajorQuiz } from './SchoolMajorQuiz';
+
 
 export const quizzes = [
+  SchoolMajorQuiz,
   InterviewQuiz,
   StatusQuiz,
   MBTIQuiz,

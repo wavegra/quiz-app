@@ -3,6 +3,8 @@ export const FoodQuiz = {
     title: "당신의 음식 취향",
     subtitle: "음식으로 보는 성격",
     mainCharacter: "🍜",
+    category: "",  // 수험생 카테고리
+    isPopular: false,  // 필요에 따라 true로 설정
     questions: [
       {
         id: 1,

@@ -3,6 +3,8 @@ export const InterviewQuiz = {
   title: "후엠아이?",
   subtitle: "나는 어떤 사람일까?",
   mainCharacter: "🤔",
+  category: "",  // 수험생 카테고리
+  isPopular: true,  // 필요에 따라 true로 설정
   questions: [
     {
       id: 1,
@@ -100,7 +102,7 @@ export const InterviewQuiz = {
     },
     analytical: {
       title: "냉철한 분석력의 전략가 🔍",
-      description: "당신은 논리적이고 분석적인 사고의 소유자예요! 문제를 체계적으로 해결하고 전략적으로 접근하는 능력이 뛰어나죠.",
+      description: "당신은 논리적이고 분석적인 사고의 소유자예요! 문제를 체계적으로 해결하고 ���략적으로 접근하는 능력이 뛰어나죠.",
       traits: ["논리적 사고", "분석력", "전략적 마인드", "객관적 시각", "문제해결 능력"]
     },
     emotional: {
@@ -128,6 +130,33 @@ export const InterviewQuiz = {
       description: "당신은 체계적이고 계획적인 성격의 소유자예요! 정리정돈을 좋아하고 효율적인 시스템을 만드는 것을 즐기죠.",
       traits: ["체계적인 성격", "계획성", "조직력", "꼼꼼함", "효율성"]
     }
+  },
+
+  calculateResult: function(answers) {
+    // 답변이 없는 경우 기본값 반환
+    if (!answers || answers.length === 0) {
+      return 'sincere';
+    }
+
+    // 각 성향별 점수 집계
+    const counts = {};
+    answers.forEach(answer => {
+      counts[answer] = (counts[answer] || 0) + 1;
+    });
+
+    // 가장 높은 점수를 받은 성향 찾기
+    let maxCount = 0;
+    let resultType = 'sincere'; // 기본값
+
+    Object.entries(counts).forEach(([type, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        resultType = type;
+      }
+    });
+
+    // 결과가 results 객체에 있는지 확인
+    return this.results[resultType] ? resultType : 'sincere';
   }
 }
 

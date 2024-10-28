@@ -6,6 +6,9 @@ export const MBTIQuiz = createQuiz({
   title: "초간단 MBTI 테스트",
   subtitle: "10분만에 알아보는 나의 성격 유형",
   mainCharacter: "🦊",
+  category: "",  // 수험생 카테고리
+  isPopular: true,  // 필요에 따라 true로 설정
+
   resultType: 'complex',
   
   questions: [
@@ -334,12 +337,14 @@ export const MBTIQuiz = createQuiz({
       J: 0, P: 0
     };
 
-    // 답변 집계
+    // 답변 집계 - answer.type으로 접근하도록 수정
     answers.forEach(answer => {
-      if (answer in counts) {
-        counts[answer]++;
+      if (answer && answer.type && answer.type in counts) {
+        counts[answer.type]++;
       }
     });
+
+    console.log('MBTI 점수:', counts); // 디버깅용
 
     // MBTI 유형 결정
     const type = [
@@ -349,10 +354,21 @@ export const MBTIQuiz = createQuiz({
       counts.J > counts.P ? 'J' : 'P'
     ].join('');
 
+    console.log('계산된 MBTI:', type); // 디버깅용
+
+    // 결과가 results에 없는 경우 ISTJ로 폴백
+    if (!this.results[type]) {
+      console.error('알 수 없는 MBTI 유형:', type);
+      return {
+        type: 'ISTJ',
+        ...this.results['ISTJ']
+      };
+    }
+
     // 결과 객체 반환
     return {
-      type: type,
-      ...this.results[type] || this.results['ISTJ']
+      type,
+      ...this.results[type]
     };
   }
 }

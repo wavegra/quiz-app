@@ -3,6 +3,8 @@ export const TravelQuiz = {
     title: "여행 스타일 테스트",
     subtitle: "당신의 여행 성향은?",
     mainCharacter: "✈️",
+    category: "",  // 수험생 카테고리
+    isPopular: false,  // 필요에 따라 true로 설정
     questions: [
       {
         id: 1,

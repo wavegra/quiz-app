@@ -3,6 +3,8 @@ export const JobQuiz = {
     title: "나의 직업 적성",
     subtitle: "나에게 맞는 직업은?",
     mainCharacter: "💼",
+    category: "",  // 수험생 카테고리
+    isPopular: false,  // 필요에 따라 true로 설정
     description: "평소 나의 모습과 가장 비슷한 답변을 선택해주세요.",
     questions: [
       {

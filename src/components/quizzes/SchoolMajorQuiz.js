@@ -3,20 +3,59 @@ export const SchoolMajorQuiz = {
     title: '내 성적에 맞는 학교와 전공은?',
     description: '성적과 MBTI를 기반으로 나에게 맞는 학교와 전공을 추천받아보세요!',
     mainCharacter: '🎓',
+    category: 'exam',  // 수험생 카테고리
+    isPopular: false,  // 필요에 따라 true로 설정
+  
     isEvent: true,
     questions: [
-      {
-        id: 1,
-        text: "당신의 수능/모의고사 등급을 입력해주세요",
-        type: 'grade',
-        subjects: [
-          { name: '국어', placeholder: '1~9 등급' },
-          { name: '수학', placeholder: '1~9 등급' },
-          { name: '영어', placeholder: '1~9 등급' },
-          { name: '탐구1', placeholder: '1~9 등급' },
-          { name: '탐구2', placeholder: '1~9 등급' }
-        ]
-      },
+        {
+            id: 1,
+            text: "당신의 수능/모의고사 등급을 입력해주세요",
+            type: 'grades',
+            subjects: {
+              korean: {
+                name: '국어',
+                type: 'single'
+              },
+              math: {
+                name: '수학',
+                type: 'select',
+                options: ['확률과 통계', '미적분', '기하']
+                    },
+              english: {
+                name: '영어',
+                type: 'single'
+              },
+              tamgu1: {
+                name: '탐구1',
+                type: 'complex',
+                categories: {
+                  social: {
+                    name: '사회탐구',
+                    options: ['생활과 윤리', '윤리와 사상', '한국지리', '세계지리', '동아시아사', '세계사', '정치와 법', '경제', '사회문화']
+                  },
+                  science: {
+                    name: '과학탐구',
+                    options: ['물리학Ⅰ', '물리학Ⅱ', '화학Ⅰ', '화학Ⅱ', '생명과학Ⅰ', '생명과학Ⅱ', '지구과학Ⅰ', '지구과학Ⅱ']
+                  }
+                }
+              },
+              tamgu2: {
+                name: '탐구2',
+                type: 'complex',
+                categories: {
+                  social: {
+                    name: '사회탐구',
+                    options: ['생활과 윤리', '윤리와 사상', '한국지리', '세계지리', '동아시아사', '세계사', '정치와 법', '경제', '사회문화']
+                  },
+                  science: {
+                    name: '과학탐구',
+                    options: ['물리학Ⅰ', '물리학Ⅱ', '화학Ⅰ', '화학Ⅱ', '생명과학Ⅰ', '생명과학Ⅱ', '지구과학Ⅰ', '지구과학Ⅱ']
+                  }
+                }
+              }
+            }
+          },
       {
         id: 2,
         text: "공부할 때 나는...",
@@ -366,37 +405,110 @@ export const SchoolMajorQuiz = {
 }
     },
     calculateResult: function(answers) {
-      // 첫 번째 답변은 성적 정보
-      const grades = answers[0];
-      
-      // 나머지 답변으로 MBTI 계산
-      const mbtiAnswers = answers.slice(1);
-      const counts = {
-        E: 0, I: 0,
-        S: 0, N: 0,
-        T: 0, F: 0,
-        J: 0, P: 0
-      };
-      
-      mbtiAnswers.forEach(answer => {
-        if (answer in counts) {
-          counts[answer]++;
+      try {
+        // MBTI 답변 처리 (첫 번째 답변 제외)
+        const mbtiAnswers = answers.slice(1);
+        
+        const counts = {
+          E: 0, I: 0,
+          S: 0, N: 0,
+          T: 0, F: 0,
+          J: 0, P: 0
+        };
+        
+        mbtiAnswers.forEach(answer => {
+          if (typeof answer === 'object' && answer.value) {
+            counts[answer.value]++;
+          } else if (typeof answer === 'string') {
+            counts[answer]++;
+          }
+        });
+
+        const mbti = [
+          counts.E > counts.I ? 'E' : 'I',
+          counts.S > counts.N ? 'S' : 'N',
+          counts.T > counts.F ? 'T' : 'F',
+          counts.J > counts.P ? 'J' : 'P'
+        ].join('');
+
+        console.log('Calculated MBTI:', mbti);
+        
+        // 성적 정보 처리 (첫 번째 답변)
+        const gradesInfo = answers[0];
+        if (gradesInfo && gradesInfo.grades) {
+          const grades = Object.values(gradesInfo.grades)
+            .map(grade => parseInt(grade))
+            .filter(grade => !isNaN(grade));
+
+          if (grades.length > 0) {
+            const averageGrade = grades.reduce((a, b) => a + b, 0) / grades.length;
+            console.log('Average grade:', averageGrade);
+          }
         }
-      });
-  
-      const mbti = [
-        counts.E > counts.I ? 'E' : 'I',
-        counts.S > counts.N ? 'S' : 'N',
-        counts.T > counts.F ? 'T' : 'F',
-        counts.J > counts.P ? 'J' : 'P'
-      ].join('');
-  
-      // 성적 수준 판단
-      const averageGrade = Object.values(grades).reduce((a, b) => a + b, 0) / Object.values(grades).length;
-      const level = averageGrade <= 2 ? 'HIGH' : averageGrade <= 4 ? 'MID' : 'LOW';
-  
-      // MBTI와 성적 수준을 조합하여 결과 키 생성
-      const resultKey = `${mbti}_${level}`;
-      return this.results[resultKey];
-    }
+
+        return mbti;
+      } catch (error) {
+        console.error('Error in calculateResult:', error);
+        return 'ISTJ'; // 기본값
+      }
+    },
+
+    calculateResult: function(answers) {
+        console.log('Calculating result with answers:', answers); // 디버깅용
+      
+        try {
+          // MBTI 답변만 추출 (첫 번째 답변 제외)
+          const mbtiAnswers = answers.slice(1).map(answer => answer);
+          
+          const counts = {
+            E: 0, I: 0,
+            S: 0, N: 0,
+            T: 0, F: 0,
+            J: 0, P: 0
+          };
+          
+          mbtiAnswers.forEach(answer => {
+            if (typeof answer === 'object' && answer.value) {
+              counts[answer.value]++;
+            } else if (typeof answer === 'string') {
+              counts[answer]++;
+            }
+          });
+            
+          const mbti = [
+            counts.E > counts.I ? 'E' : 'I',
+            counts.S > counts.N ? 'S' : 'N',
+            counts.T > counts.F ? 'T' : 'F',
+            counts.J > counts.P ? 'J' : 'P'
+          ].join('');
+      
+          console.log('Calculated MBTI:', mbti); // 디버깅용
+      
+          // 성적 정보는 첫 번째 답변에 있음
+          const gradesInfo = answers[0];
+          console.log('Grades info:', gradesInfo); // 디버깅용
+      
+          // 등급 평균 계산 (숫자로 변환하여 계산)
+          if (gradesInfo && gradesInfo.grades) {
+            const grades = Object.values(gradesInfo.grades)
+              .map(grade => parseInt(grade))
+              .filter(grade => !isNaN(grade));
+      
+            if (grades.length > 0) {
+              const averageGrade = grades.reduce((a, b) => a + b, 0) / grades.length;
+              console.log('Average grade:', averageGrade); // 디버깅용
+            }
+          }
+      
+          // MBTI 결과만 반환 (일단 성적은 제외)
+            return mbti;
+      
+        } catch (error) {
+          console.error('Error calculating result:', error);
+          return 'ISTJ'; // 오류 발생 시 기본값 반환
+        }
+      }
+      
+
   };
+
